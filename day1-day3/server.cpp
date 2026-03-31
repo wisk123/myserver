@@ -29,7 +29,6 @@ int main()
 
 
 int sockfd=socket(AF_INET,SOCK_STREAM,0);//向操作系统申请一个「TCP 网络通信的插座」，返回它的身份证号（sockfd）。
-std::cout<<sockfd<<std::endl;
 errif(sockfd==-1,"socket create error");
 
 struct sockaddr_in serv_addr;
@@ -85,6 +84,10 @@ while(true){
             //（底层通常是unsigned int/unsigned short），作用是统一网络地址长度的变量类型，
 
             int clnt_sockfd=accept(sockfd,(sockaddr*)&clnt_addr,&clnt_addr_len);
+            // 从监听套接字 sockfd 的已完成连接队列中取出第一个连接。
+            //创建一个全新的已连接套接字，并返回其文件描述符。
+            //新套接字不再处于监听状态，专门用于与该客户端通信。
+            //原监听套接字 sockfd 不受影响，继续监听新连接。
             errif(clnt_sockfd==-1,"socket accept error");
             printf("new clint fd %d! IP:%s  Port:%d\n",clnt_sockfd,inet_ntoa(clnt_addr.sin_addr),ntohs(clnt_addr.sin_port));
             
@@ -93,8 +96,10 @@ while(true){
             ev.events=EPOLLIN|EPOLLET;
             setnonblocking(clnt_sockfd);
             epoll_ctl(epfd,EPOLL_CTL_ADD,clnt_sockfd,&ev);
+            //clnt_sockfd	要监听的目标文件描述符	刚 accept 出来的客户端通信 socket
+            //&ev	指向 epoll_event 结构体，指定要监听什么事件	告诉 epoll：监听该客户端的读 / 写事件
 
-        }else if(events[i].events&EPOLLIN){//可读事件
+        }else if(events[i].events&EPOLLIN){//可读事件//events[i].events&EPOLLIN按位与运算
             char buf[READ_BUFFER];
             while(true){ //由于使用非阻塞IO，读取客户端buffer，一次读取buf大小数据，直到全部读取完毕
 
