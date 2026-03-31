@@ -7,6 +7,8 @@
 #include<sys/epoll.h>
 #include<fcntl.h>
 #include<errno.h>
+#include<iostream>
+
 
 #define MAX_EVENTS 1024
 #define READ_BUFFER 1024
@@ -27,6 +29,7 @@ int main()
 
 
 int sockfd=socket(AF_INET,SOCK_STREAM,0);//向操作系统申请一个「TCP 网络通信的插座」，返回它的身份证号（sockfd）。
+std::cout<<sockfd<<std::endl;
 errif(sockfd==-1,"socket create error");
 
 struct sockaddr_in serv_addr;
